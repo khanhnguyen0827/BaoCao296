@@ -89,11 +89,27 @@ Trình duyệt sẽ tự động bật lên hiển thị trang chủ của hệ 
 
 ## 🗂 Cấu trúc thư mục
 
-- `Controllers/`: Chứa logic điều hướng của ứng dụng.
-- `Services/`: Chứa logic xử lý nghiệp vụ (`BaoCaoService`, `EmailService`, `ExcelExportService`, `BrainService`, v.v.)
-- `Views/`: Chứa giao diện hiển thị HTML (Razor views).
-- `Models/`: Chứa các định nghĩa Class, Entity dữ liệu.
-- `wwwroot/`: Chứa các tài nguyên tĩnh như CSS, JS, hình ảnh, các thư viện Frontend.
+Dự án được tổ chức theo kiến trúc **MVC (Model-View-Controller)** chuẩn của hệ sinh thái ASP.NET Core kết hợp với lớp Dịch vụ (Service Layer):
+
+```text
+BAOCAO_369/
+├── Controllers/            # Nơi tiếp nhận HTTP Request, xử lý luồng điều hướng (BaoCaoController, AuthController...)
+├── Models/                 # Định nghĩa các cấu trúc dữ liệu, ViewModel để truyền tải dữ liệu
+├── Views/                  # Giao diện hiển thị người dùng (Razor Pages - .cshtml)
+│   ├── BaoCao/             # Layout các trang liên quan đến nghiệp vụ báo cáo
+│   ├── Shared/             # File layout dùng chung (_Layout.cshtml, _ViewStart.cshtml)
+│   └── ...
+├── Services/               # Lớp nghiệp vụ (Business Logic) cốt lõi (BaoCaoService, EmailService, ExcelExportService...)
+├── DBSetup/                # Mã nguồn phụ trợ chạy Console để thiết lập/khởi tạo CSDL nhanh
+├── Plugins/                # Chứa các thành phần mở rộng tích hợp AI (Ví dụ: OracleReportingPlugin)
+├── Properties/             # Chứa file cấu hình khởi chạy nội bộ (launchSettings.json)
+├── wwwroot/                # Nơi chứa các tài nguyên tĩnh public (CSS, JS, Hình ảnh, Bootstrap, jQuery...)
+├── Data/                   # Chứa các file định nghĩa schema/dữ liệu dạng tĩnh
+├── appsettings.json        # File cấu hình mặc định của ứng dụng ASP.NET Core
+├── .env                    # Chứa biến môi trường bảo mật (Database, Email, OpenAI Key)
+├── Program.cs              # Điểm khởi chạy ứng dụng (Entry point), đăng ký dịch vụ (DI) và Middleware Pipeline
+└── BAOCAO_369.csproj       # File định nghĩa dự án và quản lý các package (NuGet)
+```
 
 ## 📄 Bản quyền
 Dự án được xây dựng phục vụ cho nghiệp vụ quản lý báo cáo nội bộ.
