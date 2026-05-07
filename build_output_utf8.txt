@@ -1,0 +1,25 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+D:\BAOCAO_369\obj\Debug\net10.0\.NETCoreApp,Version=v10.0.AssemblyAttributes.cs(4,12): error CS0579: Duplicate 'global::System.Runtime.Versioning.TargetFrameworkAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(13,12): error CS0579: Duplicate 'System.Reflection.AssemblyCompanyAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(14,12): error CS0579: Duplicate 'System.Reflection.AssemblyConfigurationAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(15,12): error CS0579: Duplicate 'System.Reflection.AssemblyFileVersionAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(16,12): error CS0579: Duplicate 'System.Reflection.AssemblyInformationalVersionAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(17,12): error CS0579: Duplicate 'System.Reflection.AssemblyProductAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(18,12): error CS0579: Duplicate 'System.Reflection.AssemblyTitleAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(19,12): error CS0579: Duplicate 'System.Reflection.AssemblyVersionAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+
+Build FAILED.
+
+D:\BAOCAO_369\obj\Debug\net10.0\.NETCoreApp,Version=v10.0.AssemblyAttributes.cs(4,12): error CS0579: Duplicate 'global::System.Runtime.Versioning.TargetFrameworkAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(13,12): error CS0579: Duplicate 'System.Reflection.AssemblyCompanyAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(14,12): error CS0579: Duplicate 'System.Reflection.AssemblyConfigurationAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(15,12): error CS0579: Duplicate 'System.Reflection.AssemblyFileVersionAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(16,12): error CS0579: Duplicate 'System.Reflection.AssemblyInformationalVersionAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(17,12): error CS0579: Duplicate 'System.Reflection.AssemblyProductAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(18,12): error CS0579: Duplicate 'System.Reflection.AssemblyTitleAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+D:\BAOCAO_369\obj\Debug\net10.0\BAOCAO_369.AssemblyInfo.cs(19,12): error CS0579: Duplicate 'System.Reflection.AssemblyVersionAttribute' attribute [D:\BAOCAO_369\BAOCAO_369.csproj]
+    0 Warning(s)
+    8 Error(s)
+
+Time Elapsed 00:00:03.84

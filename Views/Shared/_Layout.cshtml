@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Khai báo bộ mã hóa ký tự UTF-8 cho toàn trang web -->
+    <meta charset="utf-8" />
+    <!-- Cài đặt viewport hỗ trợ responsive trên thiết bị di động -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- ViewData["Title"] được lấy từ các trang View con để gán vào Tiêu đề trình duyệt -->
+    <title>@ViewData["Title"] - BAOCAO_369</title>
+    <!-- Thẻ script import map mặc định tự sinh của ASP.NET Core MVC -->
+    <script type="importmap"></script>
+    
+    <!-- Tham chiếu thư viện CSS Bootstrap được cài trên server qua thư mục lib -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Tham chiếu FontAwesome cho các icon mượt mà -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <!-- Tham chiếu file giao diện CSS tùy chọn (site.css) có thêm tham số asp-append-version giúptránh cache trình duyệt khi css đổi nội dung-->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- Tham chiếu CSS nội suy tự động (scoped CSS của riêng Project ASP.NET sinh ra) -->
+    <link rel="stylesheet" href="~/BAOCAO_369.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <!-- Bắt đầu phần thanh điều hướng thanh Navbar cố định bên trên -->
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <!-- Tên thương hiệu/dự án chuyển điều hướng về Controller BaoCao, Action Index -->
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="BaoCao" asp-action="Index" style="color: var(--primary);">HỆ THỐNG BÁO CÁO</a>
+                <!-- Nút bấm sẽ được kích hoạt trên phiên bản kích thước mobile để Expand/Collapse thanh menu -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <!-- Bao bọc tất cả menu con tại menu chính -->
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <!-- Đường dẫn tab thứ nhất của menu -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="BaoCao" asp-action="Index">Báo cáo Mẫu 3</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Database" asp-action="ImportSql">Import SQL</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Đã bỏ khối đăng nhập theo yêu cầu -->
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Đoạn trung tâm chứa nội dung (Container) phần thân của Trang Web -->
+    <div class="container-fluid pt-4 px-4">
+        <main role="main" class="pb-3">
+            <!-- Điểm Render (trải dữ liệu) quan trọng nhất của mọi trang MVC. Các Views .cshtml độc lập sẽ được "rót" Code vào chính vị trí này -->
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Thanh thẻ chân trang (Footer), hiện đang để d-none nên Footer này sẽ được ẩn khỏi trang -->
+    <footer class="border-top footer text-muted d-none">
+        <div class="container-fluid px-4">
+            &copy; 2026 - BAOCAO_369 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    
+    <!-- Nhúng thư viện jQuery cơ bản cho trang -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Nhúng thư viện Bootstrap Javascript bundle cấu thành các hiệu ứng Modal/Tooltip -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Nhúng mã tuỳ chọn tùy biến của site site.js (áp dụng kỹ thuật làm mới tự động append-version) -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Điểm Render hỗ trợ render mọi Script riêng của từng trang Layout -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

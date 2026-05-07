@@ -1,0 +1,17 @@
+{
+  "database": "Oracle DB_BAOCAO",
+  "tables": [
+    {
+      "name": "DM_NHAN_VIEN",
+      "description": "Danh mục nhân viên hệ thống (chứa ID, tên, đơn vị)"
+    },
+    {
+      "name": "DM_DON_VI",
+      "description": "Danh sách các đơn vị điện lực thành viên trực thuộc"
+    },
+    {
+      "name": "DOANH_THU_THANG",
+      "description": "Bảng lưu trữ chỉ tiêu báo cáo doanh thu theo tháng của các đơn vị"
+    }
+  ]
+}

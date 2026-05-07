@@ -1,0 +1,425 @@
+@model BAOCAO_369.Models.BaoCaoViewModel
+@{
+    // Gán tiêu đề (Title) của trang để hiển thị lên the <title> trên Layout
+    ViewData["Title"] = "Báo cáo Thống kê Kết quả Lập hồ sơ - EVN Premium";
+}
+
+<div class="report-container animate-fade">
+    <div class="card-premium">
+        <!-- Khu vực hiển thị Tiêu đề và Nút bấm (Header Section) -->
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+                <h1 class="page-title">Báo cáo Thống kê Kết quả Lập hồ sơ</h1>
+                <p class="page-subtitle">Biểu mẫu 3: THỐNG KÊ KẾT QUẢ LẬP HỒ SƠ & GIAO NỘP HỒ SƠ VÀO LƯU TRỮ HIỆN HÀNH</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" id="btnSendAllEmails" class="btn-premium btn-primary-premium">
+                    <i class="fas fa-paper-plane"></i> GỬI TẤT CẢ MAIL
+                </button>
+                <!-- Nút Xuất file Excel gọi Action ExportExcel, có truyền theo ID_DV đang lọc qua Tag Helper ASP.NET -->
+                <a asp-action="ExportExcel" asp-route-idDv="@Model.IdDv" class="btn-premium btn-accent-premium">
+                    <i class="fas fa-file-excel"></i> XUẤT EXCEL
+                </a>
+                <a asp-action="ExportAllExcel" class="btn-premium btn-warning-premium" style="background-color: var(--warning); color: #fff;">
+                    <i class="fas fa-file-archive"></i> XUẤT TẤT CẢ (.ZIP)
+                </a>
+            </div>
+        </div>
+
+        <!-- Khu vực Bộ Lọc (Filter Toolbar) -->
+        <div class="toolbar-premium">
+            <!-- Form sử dụng Method GET để gắn tham số lên QueryString (URL) -->
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label-premium">ĐƠN VỊ</label>
+                    <!-- Dropdown danh sách đơn vị để thực hiện filter (tên control là 'idDv' ánh xạ vào idDv tham số Controller) -->
+                    <select name="idDv" class="form-control-premium w-100">
+                        <option value="">-- Tất cả đơn vị --</option>
+                        <!-- Vòng lặp rải toàn bộ Đơn Vị lấy từ Backend Model ra thành các thẻ con option -->
+                        @foreach (var dv in Model.DonVis)
+                        {
+                            <!-- Nếu ID đơn vị thuộc vòng lặp trùng khớp với giá trị tham số filter hiện tại, thì set 'selected' -->
+                            @if (Model.IdDv == dv.ID_DV)
+                            {
+                                <option value="@dv.ID_DV" selected>@dv.TEN_DV</option>
+                            }
+                            else
+                            {
+                                <option value="@dv.ID_DV">@dv.TEN_DV</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-premium">DỮ LIỆU CẬP NHẬT ĐẾN</label>
+                    <!-- Hiển thị cứng (readonly text) hiển thị thông báo ngày cập nhật dữ liệu mới nhất được lấy từ Controller Backend -->
+                    <div class="form-control-premium w-100 d-flex align-items-center" style="background-color: #f1f5f9; color: var(--primary); font-weight: 600;">
+                        <i class="fas fa-calendar-alt me-2"></i> @Model.ToDate.ToString("dd/MM/yyyy")
+                    </div>
+                </div>
+                <!-- Vùng chứa các nút thao tác tương tác của Form -->
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn-premium btn-primary-premium flex-grow-1 justify-content-center">
+                        <i class="fas fa-filter"></i> LỌC DỮ LIỆU
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bảng Dữ Liệu Grid Layout Chính yếu -->
+        <div class="table-responsive-premium">
+            <table class="table-premium" id="reportTable">
+                <thead>
+                    <tr>
+                        <!-- Các cột Tiêu đề (th tags) có sử dụng sticky CSS giữ cố định cột đầu khi thao tác trượt kéo ngang (horizontal scroll) -->
+                        <th class="text-center col-sticky" style="width: 50px; left: 0; z-index: 15;">TT</th>
+                        <th class="text-center col-sticky" style="min-width: 250px; left: 50px; z-index: 15;">Tên đơn vị</th>
+                        <th class="text-center" style="min-width: 130px;">Ngày <br/><small>cập nhật</small></th>
+                        <!-- Các cột nghiệp vụ từ cột 3 đến 15, có tag <i> Tooltip giải nghĩa (thuộc tính title) -->
+                        <th class="text-center" title="Lấy từ báo cáo: Đánh giá kết quả văn bản lập HSCV điện tử của CBCNV (HSCV.01)">Số VB chủ trì <br/><small>chưa LHSCV</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Lấy từ báo cáo: HSCV đang thực hiện">Số HS đang <br/><small>thực hiện</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Số lượng VB chủ trì (ngạch HC) trong HS đang thực hiện. Từ 01/01/2026 đến ngày báo cáo.">Số VB chủ trì <br/><small>trong HS đang thực hiện</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Lấy từ báo cáo: HSCV sai quy định bị trả lại (HSCV.05)">Số HS <br/><small>trả lại</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Số lượng VB chủ trì (ngạch HC) trong HS trả lại. Từ 01/01/2026 đến ngày báo cáo.">Số VB chủ trì <br/><small>trong HS trả lại</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Lấy từ báo cáo: Giao nộp HSCV điện tử vào lưu trữ cơ quan (HSCV.04)">Số HS kết thúc <br/><small>chưa giao nộp</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Số lượng VB chủ trì (ngạch HC) trong HS đã kết thúc, chưa giao nộp. Từ 01/01/2026 đến ngày báo cáo.">Số VB chủ trì <br/><small>trong HS kết thúc</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Lấy từ báo cáo: Giao nộp HSCV điện tử vào lưu trữ cơ quan (HSCV.04)">Số HS <br/><small>chờ LTHH</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Số lượng VB chủ trì (ngạch HC) trong HS chờ tiếp nhận vào LTHH. Từ 01/01/2026 đến ngày báo cáo.">Số VB chủ trì <br/><small>trong HS chờ LTHH</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Lấy từ chức năng: Hồ sơ đã tiếp nhận trên menu Hồ sơ lưu trữ cơ quan">HS đúng quy định <br/><small>đã tiếp nhận LTHH</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Số lượng VB chủ trì (ngạch HC) trong HS đã tiếp nhận vào LTHH. Từ 01/01/2026 đến ngày báo cáo.">Số VB HS <br/><small>tiếp nhận LTHH</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Tổng số văn bản chủ trì giải quyết. Từ 01/01/2026 đến ngày báo cáo.">Tổng số VB <br/><small>chủ trì giải quyết</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" title="Tỷ lệ lưu trữ = Cột (13) / Cột (14) × 100%">Tỷ lệ <br/><small>(13)/(14)</small> <i class="fas fa-circle-info tooltip-icon"></i></th>
+                        <th class="text-center" style="min-width: 100px;">Thao tác</th>
+                    </tr>
+                    <!-- Hàng Tiêu đề phụ dưới (hiển thị đánh tự động số thứ tự Cột) -->
+                    <tr class="sub-header">
+                        <td class="text-center col-sticky" style="left: 0;">(1)</td>
+                        <td class="text-center col-sticky" style="left: 50px;">(2)</td>
+                        <td class="text-center"></td>
+                        <!-- Cú pháp lập trình vòng lặp C# của Razor Engine (FOR Loop) để đánh số (3) tới (15) cho tự động -->
+                        @for (int i = 3; i <= 15; i++)
+                        {
+                            // Lắp logic phủ Shading (đổ nền mờ) xen kẽ chẵn lẻ cho thân cột lấy điểm nhấn cho mắt
+                            <td class="text-center @(i % 2 != 0 && i < 15 ? "shading-cell" : "")">
+                                @(i == 15 ? "(15)" : $"({i})")
+                            </td>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Kiểm tra mảng tập kết báo cáo truyền sang (Items) có rỗng Null hay không trước khi Binding để tránh crash Layout -->
+                    @if (Model.Items != null && Model.Items.Count > 0)
+                    {
+                        <!-- Vòng lặp foreach duyệt mảng render sinh thẻ <tr> cho mỗi Item trong danh sách, gán ID Đơn vị vào Dataset thẻ TR để dễ parse bên JS -->
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr data-id-dv="@item.ID_DV">
+                                <!-- Cột 1 và 2: Bôi cố định (Sticky CSS left side) hiển thị số TT và Tên Đơn Vị -->
+                                <td class="text-center text-muted col-sticky" style="left: 0; background: white;">@item.TT</td>
+                                <td class="fw-bold col-sticky" style="left: 50px; background: white; color: var(--primary);">@item.TEN_DV</td>
+                                
+                                <!-- Cột hiển thị Ngày Cập Nhật Cuối -->
+                                <td class="text-center readonly-cell" style="font-size: 0.82rem; white-space: nowrap;">
+                                    @if (item.NgayCapNhat.HasValue)
+                                    {
+                                        <span style="color: var(--success);"><i class="fas fa-clock me-1"></i>@item.NgayCapNhat.Value.ToString("dd/MM/yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa cập nhật</span>
+                                    }
+                                </td>
+                                
+                                <!-- CÁC CỘT CHỨA DỮ LIỆU -->
+                                <td class="text-center shading-cell">@item.COT_3</td>
+                                <td class="text-center">@item.COT_4</td>
+                                <td class="text-center readonly-cell shading-cell">@item.COT_5</td>
+                                <td class="text-center">@item.COT_6</td>
+                                <td class="text-center readonly-cell shading-cell">@item.COT_7</td>
+                                <td class="text-center">@item.COT_8</td>
+                                <td class="text-center readonly-cell shading-cell">@item.COT_9</td>
+                                <td class="text-center">@item.COT_10</td>
+                                <td class="text-center readonly-cell shading-cell">@item.COT_11</td>
+                                <td class="text-center">@item.COT_12</td>
+                                <td class="text-center readonly-cell shading-cell">@item.COT_13</td>
+                                <td class="text-center readonly-cell">@item.COT_14</td>
+                                
+                                <!-- Cột số 15 tính Tỷ lệ: Ghi đè CSS cho có màu vàng nổi bật và highlight accent color -->
+                                <td class="text-center fw-bold" style="color: var(--accent); background: #fffbeb;">@item.COT_15%</td>
+                                
+                                <td class="text-center">
+                                    <a asp-action="History" asp-route-idDv="@item.ID_DV" class="btn btn-sm btn-outline-info" title="Xem lịch sử thay đổi">
+                                        <i class="fas fa-history"></i> Lịch sử
+                                    </a>
+                                    <!-- Nút Mở Modal Gửi Mail cho đơn vị -->
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-open-mail-modal" 
+                                            data-id-dv="@item.ID_DV" 
+                                            data-ten-dv="@item.TEN_DV" 
+                                            data-email="@(Model.DonVis.FirstOrDefault(d => d.ID_DV == item.ID_DV)?.EMAIL ?? "")"
+                                            title="Gửi Báo Cáo Tới Đơn Vị">
+                                        <i class="fas fa-envelope"></i> Gửi Mail
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <!-- Kịch bản khi If rỗng (Tức list item là null hoặc 0) -> hiển thị khối HTML trống (Empty State) để người dùng khỏi nhầm lỗi -->
+                        <tr>
+                            <td colspan="17" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-circle-info fa-2x mb-3"></i>
+                                    <p>Chưa có dữ liệu cho điều kiện lọc này.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Khối diễn dịch Giải Thích Cách Lấy Số Liệu tĩnh phía dưới cùng -->
+        <div class="explanation-card">
+            <h5 class="explanation-title">
+                <i class="fas fa-circle-info"></i> I. GIẢI THÍCH CÁCH LẤY SỐ LIỆU:
+            </h5>
+            <div class="row">
+                <!-- Nội dung giải thích được chẻ tách thành hệ 2 cột lưới qua class 'col-lg-6' Bootstrap -->
+                <div class="col-lg-6">
+                    <ul class="list-unstyled explanation-list">
+                        <li><strong>Cột (3):</strong> Lấy từ báo cáo "Đánh giá kết quả văn bản lập HSCV điện tử của CBCNV (HSCV.01)"</li>
+                        <li><strong>Cột (4):</strong> Lấy từ báo cáo "HSCV đang thực hiện"</li>
+                        <li><strong>Cột (5), (7), (9), (11), (13), (14):</strong> Số lượng văn bản chủ trì theo ngạch hành chính (không bao gồm văn bản nội bộ). Thời gian từ 01/01/2026 đến ngày @Model.ToDate.ToString("dd/MM/yyyy").</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <ul class="list-unstyled explanation-list">
+                        <li><strong>Cột (6):</strong> Lấy từ báo cáo "HSCV sai quy định bị trả lại (HSCV.05)"</li>
+                        <li><strong>Cột (8), (10):</strong> Lấy từ báo cáo "Giao nộp HSCV điện tử vào lưu trữ cơ quan (HSCV.04)"</li>
+                        <li><strong>Cột (12):</strong> Lấy từ chức năng "Hồ sơ đã tiếp nhận" trên menu Hồ sơ lưu trữ cơ quan.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Gửi Mail Cho Đơn Vị -->
+<div class="modal fade" id="sendMailModal" tabindex="-1" aria-labelledby="sendMailModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: var(--primary); color: white;">
+        <h5 class="modal-title" id="sendMailModalLabel"><i class="fas fa-envelope"></i> Gửi Báo Cáo</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="frmSendMail">
+          <input type="hidden" id="mailIdDv" />
+          <div class="mb-3">
+            <label class="form-label fw-bold">Đơn vị nhận:</label>
+            <input type="text" class="form-control" id="mailTenDv" readonly style="background-color: #f1f5f9;" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Email Nhận (To):</label>
+            <input type="email" class="form-control" id="mailToEmail" placeholder="vd: ban_giam_doc@evn.com.vn" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Email CC (Cách nhau dấu phẩy):</label>
+            <input type="text" class="form-control" id="mailCcEmail" placeholder="vd: phong_it@evn.com.vn, nhan_su@evn.com.vn" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmSendMail">
+            <i class="fas fa-paper-plane"></i> Xác Nhận Gửi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Vùng định nghĩa rỗng dành để "giam" các thẻ thông báo động (Toast Noti) chứa pop-up kiểu Floating góc phải ngoài viền màn hình -->
+<div id="toastContainer" style="position:fixed; top:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.75rem;"></div>
+
+
+<!-- Thêm Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<!-- Khối định nghĩa CSS giao diện (chỉ áp dụng tạm riêng cho bảng tại component này do scope chưa tích hợp đầy đủ ra file CSS tổng ngoài WebRoot) -->
+<style>
+    /* Cố định cột dùng sticky position trục OX */
+    .col-sticky {
+        position: sticky;
+        z-index: 5;
+    }
+    .table-premium thead .col-sticky {
+        z-index: 15;
+        background-color: var(--primary) !important;
+    }
+    .table-premium .sub-header .col-sticky {
+        background-color: #f1f5f9 !important;
+        z-index: 10;
+    }
+    .table-premium tbody .col-sticky {
+        background-color: white;
+    }
+    .table-premium tbody tr:hover .col-sticky {
+        background-color: #f8fafc !important; /* Khi hover trượt chuột lên dòng thì đổ xám cột sticky để match giao diện đồng bộ */
+    }
+    .tooltip-icon {
+        font-size: 0.65rem;
+        opacity: 0.5;
+        vertical-align: super;
+        margin-left: 2px;
+    }
+    /* Set Layout Code CSS cho các thẻ Toast Notification Popup */
+    .toast-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1.25rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        min-width: 280px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        color: white;
+        animation: toastIn 0.3s ease;
+    }
+    /* Gradient Color cho từng hệ màu Thành Công, Lỗi, Thông thường */
+    .toast-success { background: linear-gradient(135deg, #10b981, #059669); }
+    .toast-error   { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .toast-info    { background: linear-gradient(135deg, #003893, #0056e0); }
+    /* Keyframe trượt (TranslateX) hiệu ứng Mượt mờ cho hộp Toast đâm từ mép ngoài phải vào */
+    @@keyframes toastIn {
+        from { opacity: 0; transform: translateX(60px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    }
+    @@keyframes toastOut {
+        from { opacity: 1; transform: translateX(0); }
+        to   { opacity: 0; transform: translateX(60px); }
+    }
+
+
+
+</style>
+
+<!-- Phần điểm chỉ thị định nghĩa để đẩy đoạn mã Script nằm dưới cùng của Body (kỹ thuật lazy load qua cơ chế Section _Layout.cshtml) -->
+@section Scripts {
+<script>
+    // ---- HÀM VÀ XỬ LÝ TOAST THÔNG BÁO UI TƯƠNG TÁC JS ----
+    // Hàm showToast dùng để nhúng html của mẩu text thông báo (thành công/lỗi) vào phần giao diện UI tạo popup (thay thế hộp thoại Alert cũ)
+    function showToast(msg, type, ms) {
+        ms = ms || 3500; // Tham số thời gian timeout tự hủy cái thông báo (Mặc định: 3,5 giây)
+        var icons = { success:'fa-check-circle', error:'fa-times-circle', info:'fa-circle-info' };
+        
+        // Khởi tạo thuần túy một cục Div DOM
+        var t = document.createElement('div');
+        t.className = 'toast-item toast-' + type; // Set nối class động theo type (thành success, error, info)
+        t.innerHTML = '<i class="fas ' + icons[type] + ' fa-lg"></i><span>' + msg + '</span>'; // Render đoạn Icon tương ứng và nhúng Thông điệp Message vào span
+        document.getElementById('toastContainer').appendChild(t); // Nhét cái Element trên vào vùng chứa rỗng Container Toast qua DOM
+        
+        // Cài đặt Timer ẩn và tự động gỡ DOM phần tử thông báo này sau thời gian Delay đã đặt
+        setTimeout(function(){
+            t.style.animation = 'toastOut 0.3s ease forwards'; // Kích hoạt animation chớp bay lặn ra ngoài
+            setTimeout(function(){ t.remove(); }, 300); // Rác đi DOM (Xóa Element) sau khi Animation trôi đi xong (0.3s)
+        }, ms);
+    }
+
+    // --- LOGIC GỬI MAIL AJAX ---
+    
+    // Gửi Tất Cả
+    var btnSendAll = document.getElementById('btnSendAllEmails');
+    if (btnSendAll) {
+        btnSendAll.addEventListener('click', async function() {
+            if (!confirm('Bạn có chắc chắn muốn gửi email tự động hàng loạt tới TẤT CẢ đơn vị đã có cấu hình Email? Việc này có thể mất vài phút.')) return;
+            
+            var orig = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG GỬI...';
+            this.disabled = true;
+
+            try {
+                var res = await fetch('/BaoCao/SendAllEmails', { method: 'POST' });
+                var result = await res.json();
+                
+                if (result.success) {
+                    showToast(result.message, 'success', 5000);
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error', 5000);
+                }
+            } catch (err) {
+                showToast('Lỗi kết nối mạng: ' + err.message, 'error');
+            } finally {
+                this.innerHTML = orig;
+                this.disabled = false;
+            }
+        });
+    }
+
+    // Modal Gửi Mail Đơn Vị Cụ Thể
+    var sendMailModalEl = document.getElementById('sendMailModal');
+    var sendMailModal = sendMailModalEl ? new bootstrap.Modal(sendMailModalEl) : null;
+    
+    document.querySelectorAll('.btn-open-mail-modal').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var idDv = this.getAttribute('data-id-dv');
+            var tenDv = this.getAttribute('data-ten-dv');
+            var email = this.getAttribute('data-email');
+            
+            document.getElementById('mailIdDv').value = idDv;
+            document.getElementById('mailTenDv').value = tenDv;
+            document.getElementById('mailToEmail').value = email;
+            document.getElementById('mailCcEmail').value = ''; // clear cũ
+            
+            if (sendMailModal) sendMailModal.show();
+        });
+    });
+
+    var btnConfirmSendMail = document.getElementById('btnConfirmSendMail');
+    if (btnConfirmSendMail) {
+        btnConfirmSendMail.addEventListener('click', async function() {
+            var toEmail = document.getElementById('mailToEmail').value.trim();
+            if (!toEmail) {
+                alert('Vui lòng nhập Email Nhận!');
+                return;
+            }
+
+            var orig = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG GỬI...';
+            this.disabled = true;
+
+            var payload = {
+                IdDv: parseFloat(document.getElementById('mailIdDv').value),
+                ToEmail: toEmail,
+                CcEmail: document.getElementById('mailCcEmail').value.trim()
+            };
+
+            try {
+                var res = await fetch('/BaoCao/SendEmailToUnit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                var result = await res.json();
+
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    if (sendMailModal) sendMailModal.hide();
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error', 5000);
+                }
+            } catch (err) {
+                showToast('Lỗi kết nối mạng: ' + err.message, 'error');
+            } finally {
+                this.innerHTML = orig;
+                this.disabled = false;
+            }
+        });
+    }
+
+</script>
+}

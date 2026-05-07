@@ -1,0 +1,100 @@
+@model List<BAOCAO_369.Models.BaoCaoItem>
+@{
+    ViewData["Title"] = "Lịch sử cập nhật đơn vị";
+}
+
+<div class="report-container animate-fade mt-3">
+    <div class="card-premium">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h2 class="page-title"><i class="fas fa-history text-primary me-2"></i> Lịch Sử Cập Nhật</h2>
+                <p class="page-subtitle mb-0">
+                    Đơn vị: <strong class="text-primary" style="font-size: 1.1rem;">@ViewBag.TenDonVi</strong>
+                </p>
+            </div>
+            <div>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive-premium mt-3">
+            <table class="table-premium table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 60px;">Lần cập nhật</th>
+                        <th class="text-center" style="min-width: 150px;">Thời gian (Ngày tạo)</th>
+                        <th class="text-center" style="min-width: 120px;">Trạng thái</th>
+                        <th class="text-center" title="Số VB chủ trì chưa LHSCV">Cột 3</th>
+                        <th class="text-center" title="Số HS đang thực hiện">Cột 4</th>
+                        <th class="text-center" title="Số VB chủ trì trong HS đang thực hiện">Cột 5</th>
+                        <th class="text-center" title="Số HS trả lại">Cột 6</th>
+                        <th class="text-center" title="Số VB chủ trì trong HS trả lại">Cột 7</th>
+                        <th class="text-center" title="Số HS kết thúc chưa giao nộp">Cột 8</th>
+                        <th class="text-center" title="Số VB chủ trì trong HS kết thúc">Cột 9</th>
+                        <th class="text-center" title="Số HS chờ LTHH">Cột 10</th>
+                        <th class="text-center" title="Số VB chủ trì trong HS chờ LTHH">Cột 11</th>
+                        <th class="text-center" title="HS đúng quy định đã tiếp nhận LTHH">Cột 12</th>
+                        <th class="text-center" title="Số VB HS tiếp nhận LTHH">Cột 13</th>
+                        <th class="text-center" title="Tổng số VB chủ trì giải quyết">Cột 14</th>
+                        <th class="text-center">Tỷ lệ (15)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        var index = Model.Count;
+                        foreach (var item in Model)
+                        {
+                            // Xác định bản ghi mới nhất (Đang hiển thị trên báo cáo chính)
+                            bool isActive = index == Model.Count;
+
+                            <tr class="@(isActive ? "table-success" : "")">
+                                <td class="text-center fw-bold text-muted">@index</td>
+                                <td class="text-center fw-bold" style="color: var(--primary);">
+                                    @(item.NgayCapNhat.HasValue ? item.NgayCapNhat.Value.ToString("dd/MM/yyyy HH:mm:ss") : "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @if (isActive)
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i> Mới nhất</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary"><i class="fas fa-archive me-1"></i> Lịch sử cũ</span>
+                                    }
+                                </td>
+                                <td class="text-center">@item.COT_3</td>
+                                <td class="text-center">@item.COT_4</td>
+                                <td class="text-center">@item.COT_5</td>
+                                <td class="text-center">@item.COT_6</td>
+                                <td class="text-center">@item.COT_7</td>
+                                <td class="text-center">@item.COT_8</td>
+                                <td class="text-center">@item.COT_9</td>
+                                <td class="text-center">@item.COT_10</td>
+                                <td class="text-center">@item.COT_11</td>
+                                <td class="text-center">@item.COT_12</td>
+                                <td class="text-center">@item.COT_13</td>
+                                <td class="text-center">@item.COT_14</td>
+                                <td class="text-center fw-bold" style="color: var(--accent);">@item.COT_15%</td>
+                            </tr>
+                            index--;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="16" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-box-open fa-2x mb-3"></i>
+                                    <p>Đơn vị này chưa có dữ liệu báo cáo nào.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
