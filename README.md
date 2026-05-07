@@ -17,53 +17,75 @@ Dự án phát triển ứng dụng Web giúp tự động hoá việc trích xu
 - **AI Integration**: Microsoft Semantic Kernel, OpenAI
 - **Frontend**: Bootstrap, jQuery, Vanilla CSS
 
-## ⚙️ Hướng dẫn Cài đặt & Cấu hình
+## ⚙️ Hướng dẫn Cài đặt & Cấu hình Chi Tiết
 
-### 1. Yêu cầu hệ thống
-- Cài đặt [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (hoặc phiên bản tương thích).
-- Cài đặt Oracle Database (ví dụ: Oracle Database 21c/23c Express Edition).
-- Đã cài đặt Git.
+### Bước 1: Yêu cầu hệ thống cần chuẩn bị
+Để chạy được dự án, máy tính của bạn cần cài đặt sẵn các phần mềm sau:
+- **[.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)** hoặc mới hơn.
+- **IDE/Editor**: Khuyến nghị dùng **Visual Studio 2022** hoặc **Visual Studio Code** (cài sẵn C# Dev Kit).
+- **Oracle Database**: Cài đặt Oracle Database (ví dụ bản 21c/23c Express Edition) hoặc dùng Oracle Cloud/Server nội bộ.
+- **Git** để clone mã nguồn.
 
-### 2. Tải mã nguồn & Cài đặt thư viện
-Clone dự án về máy tính của bạn:
-```bash
-git clone https://github.com/khanhnguyen0827/BaoCao296.git
-cd BaoCao296
-```
-Khôi phục các thư viện NuGet:
-```bash
-dotnet restore
-```
+### Bước 2: Tải mã nguồn và Cài đặt thư viện
+Mở Terminal/Command Prompt và chạy các lệnh sau:
+1. Clone dự án về máy tính:
+   ```bash
+   git clone https://github.com/khanhnguyen0827/BaoCao296.git
+   cd BaoCao296
+   ```
+2. Khôi phục (restore) các thư viện NuGet mà dự án sử dụng:
+   ```bash
+   dotnet restore
+   ```
 
-### 3. Cấu hình Cơ sở dữ liệu (Oracle)
-- Tạo một User/Schema trong Oracle Database.
-- Chạy script SQL (ví dụ: `2.SCRIP_THONGKE_BIEU_3.sql`) hoặc sử dụng tính năng Import SQL có sẵn trong hệ thống (`Views/Database/ImportSql.cshtml`) để tạo các bảng, view, thủ tục cần thiết.
+### Bước 3: Cài đặt và Cấu hình Cơ sở dữ liệu (Oracle)
+1. **Tạo User (Schema)**: 
+   Mở công cụ quản lý Oracle (như SQL Developer hoặc SQL*Plus), đăng nhập bằng tài khoản `sys` hoặc `system` và tạo một user mới:
+   ```sql
+   CREATE USER DB_BAOCAO IDENTIFIED BY mat_khau_cua_ban;
+   GRANT CONNECT, RESOURCE, DBA TO DB_BAOCAO;
+   ```
+2. **Khởi tạo dữ liệu**:
+   - Sử dụng tool SQL Developer, kết nối vào user vừa tạo (`DB_BAOCAO`).
+   - Mở và chạy toàn bộ nội dung file script thống kê biểu mẫu (ví dụ: `2.SCRIP_THONGKE_BIEU_3.sql`) để tạo các `TABLE`, `VIEW`, và chèn dữ liệu mẫu.
+   - *Cách 2*: Nếu ứng dụng đã chạy được một phần, bạn có thể truy cập `/Database/ImportSql` trên giao diện web để upload file script SQL lên.
 
-### 4. Cấu hình Biến môi trường (.env)
-Dự án sử dụng thư viện `DotNetEnv` để đọc các cấu hình bảo mật từ file `.env`.
-Tạo một file `.env` ở thư mục gốc của dự án (cùng cấp với thư mục `Controllers`, `Program.cs`) với định dạng sau:
+### Bước 4: Thiết lập Biến môi trường (.env)
+Hệ thống sử dụng file `.env` để bảo mật thông tin nhạy cảm (không lưu trực tiếp trong mã code hay file JSON công khai). 
+
+1. Tại thư mục gốc của dự án (cùng cấp với thư mục `Controllers`, file `Program.cs`), **tạo một file mới** và đặt tên là `.env`.
+2. Copy đoạn nội dung sau vào file `.env` và thay đổi các giá trị cho phù hợp với máy của bạn:
 
 ```env
-# Database Configuration
-ConnectionStrings__OracleDb=User Id=YOUR_USER;Password=YOUR_PASSWORD;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=YOUR_SERVICE)))
+# 1. Cấu hình Database Oracle
+# Thay đổi User Id, Password, HOST, PORT, SERVICE_NAME tương ứng với CSDL của bạn
+ConnectionStrings__OracleDb=User Id=DB_BAOCAO;Password=mat_khau_cua_ban;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=XEPDB1)))
 
-# SMTP Configuration (Gửi Email)
-SmtpSettings__SenderEmail=your-email@gmail.com
-SmtpSettings__Username=your-email@gmail.com
-SmtpSettings__Password=your-app-password
+# 2. Cấu hình gửi Email (Sử dụng Gmail)
+# SenderEmail và Username thường giống nhau. Password là "Mật khẩu ứng dụng" (App Password) sinh ra từ tài khoản Google.
+SmtpSettings__SenderEmail=email-cua-ban@gmail.com
+SmtpSettings__Username=email-cua-ban@gmail.com
+SmtpSettings__Password=mat_khau_ung_dung_gmail
 
-# OpenAI Configuration (Tính năng AI)
-AI__OpenAI__ApiKey=YOUR_OPENAI_API_KEY
+# 3. Cấu hình OpenAI (Tùy chọn nếu dùng tính năng Brain/AI)
+AI__OpenAI__ApiKey=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+*(**Lưu ý**: Để lấy `SmtpSettings__Password` của Gmail, bạn cần bật Xác minh 2 bước trong tài khoản Google, sau đó vào phần **App passwords** (Mật khẩu ứng dụng) để tạo một mật khẩu 16 chữ số.)*
 
-*Lưu ý: Không bao giờ đẩy (commit) file `.env` chứa mật khẩu/API Key thật của bạn lên GitHub. File này đã được thêm vào `.gitignore`.*
-
-### 5. Khởi chạy ứng dụng
-Mở terminal/cmd tại thư mục chứa file `.csproj` và chạy lệnh:
+### Bước 5: Build và Khởi chạy ứng dụng
+**Cách 1: Sử dụng Terminal / Command Line**
+Mở terminal tại thư mục dự án và chạy:
 ```bash
+dotnet build
 dotnet run
 ```
-Mở trình duyệt và truy cập vào địa chỉ: `http://localhost:5206` (Hoặc port hiển thị trong terminal của bạn).
+Sau khi terminal báo `Now listening on: http://localhost:5206` (hoặc cổng tương tự), hãy mở trình duyệt và truy cập vào đường dẫn đó.
+
+**Cách 2: Sử dụng Visual Studio 2022**
+1. Nhấp đúp vào file `BAOCAO_369.csproj` để mở dự án bằng Visual Studio.
+2. Đợi Visual Studio load xong các thư viện.
+3. Bấm nút **▶ IIS Express** (hoặc nút Start theo tên project) ở thanh menu phía trên, hoặc nhấn phím `F5` để chạy dự án ở chế độ Debug.
+Trình duyệt sẽ tự động bật lên hiển thị trang chủ của hệ thống.
 
 ## 🗂 Cấu trúc thư mục
 
