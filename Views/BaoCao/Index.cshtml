@@ -131,12 +131,30 @@
                                 </td>
                                 
                                 <!-- CÁC CỘT CHỨA DỮ LIỆU -->
-                                <td class="text-center shading-cell">@item.COT_3</td>
+                                <td class="text-center shading-cell">
+                                    @if (item.COT_3 > 0)
+                                    {
+                                        <a href="javascript:void(0)" class="btn-detail-cot3 text-decoration-none fw-bold" style="color: var(--primary); border-bottom: 1px dashed var(--primary);" data-id-dv="@item.ID_DV" data-ten-dv="@item.TEN_DV">@item.COT_3</a>
+                                    }
+                                    else
+                                    {
+                                        @item.COT_3
+                                    }
+                                </td>
                                 <td class="text-center">@item.COT_4</td>
                                 <td class="text-center readonly-cell shading-cell">@item.COT_5</td>
                                 <td class="text-center">@item.COT_6</td>
                                 <td class="text-center readonly-cell shading-cell">@item.COT_7</td>
-                                <td class="text-center">@item.COT_8</td>
+                                <td class="text-center">
+                                    @if (item.COT_8 > 0)
+                                    {
+                                        <a href="javascript:void(0)" class="btn-detail-cot8 text-decoration-none fw-bold" style="color: var(--primary); border-bottom: 1px dashed var(--primary);" data-id-dv="@item.ID_DV" data-ten-dv="@item.TEN_DV">@item.COT_8</a>
+                                    }
+                                    else
+                                    {
+                                        @item.COT_8
+                                    }
+                                </td>
                                 <td class="text-center readonly-cell shading-cell">@item.COT_9</td>
                                 <td class="text-center">@item.COT_10</td>
                                 <td class="text-center readonly-cell shading-cell">@item.COT_11</td>
@@ -149,7 +167,7 @@
                                 
                                 <td class="text-center">
                                     <a asp-action="History" asp-route-idDv="@item.ID_DV" class="btn btn-sm btn-outline-info" title="Xem lịch sử thay đổi">
-                                        <i class="fas fa-history"></i> Lịch sử
+                                        <i class="fas fa-history"></i>
                                     </a>
                                     <!-- Nút Mở Modal Gửi Mail cho đơn vị -->
                                     <button type="button" class="btn btn-sm btn-outline-primary btn-open-mail-modal" 
@@ -157,8 +175,16 @@
                                             data-ten-dv="@item.TEN_DV" 
                                             data-email="@(Model.DonVis.FirstOrDefault(d => d.ID_DV == item.ID_DV)?.EMAIL ?? "")"
                                             title="Gửi Báo Cáo Tới Đơn Vị">
-                                        <i class="fas fa-envelope"></i> Gửi Mail
+                                        <i class="fas fa-envelope"></i>
                                     </button>
+                                    <!-- Nút Xuất Excel 3 Sheet -->
+                                    <a asp-action="ExportExcel" asp-route-idDv="@item.ID_DV" asp-route-fromDate="@Model.FromDate.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.ToString("yyyy-MM-dd")" class="btn btn-sm btn-outline-success" title="Xuất Báo Cáo (3 Sheet: Tổng hợp + Chi tiết C3, C8)">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
+                                    <!-- Nút Import riêng cho đơn vị -->
+                                    <a asp-controller="Database" asp-action="ImportSql" asp-route-idDv="@item.ID_DV" class="btn btn-sm btn-outline-warning" title="Cập nhật dữ liệu cho riêng đơn vị này">
+                                        <i class="fas fa-file-import"></i>
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -240,6 +266,83 @@
   </div>
 </div>
 
+<!-- Modal Xem Chi Tiết Cột 3 -->
+<div class="modal fade" id="detailCot3Modal" tabindex="-1" aria-labelledby="detailCot3ModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: var(--primary); color: white;">
+        <h5 class="modal-title" id="detailCot3ModalLabel"><i class="fas fa-list"></i> Chi tiết số VB chủ trì chưa LHSCV - <span id="detailCot3TenDv"></span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover mb-0" style="font-size: 0.85rem;">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center">STT</th>
+                <th>Phòng Ban</th>
+                <th class="text-center">Mã CV</th>
+                <th>Ký Hiệu</th>
+                <th class="text-center">Hạn GQ</th>
+                <th>Người Chủ Trì</th>
+                <th>Trạng Thái</th>
+              </tr>
+            </thead>
+            <tbody id="detailCot3TableBody">
+              <!-- Dữ liệu sẽ được render vào đây qua AJAX -->
+            </tbody>
+          </table>
+        </div>
+        <div id="detailCot3Loading" class="text-center p-4 d-none">
+            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Xem Chi Tiết Cột 8 -->
+<div class="modal fade" id="detailCot8Modal" tabindex="-1" aria-labelledby="detailCot8ModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: var(--primary); color: white;">
+        <h5 class="modal-title" id="detailCot8ModalLabel"><i class="fas fa-list"></i> Chi tiết HS kết thúc chưa giao nộp - <span id="detailCot8TenDv"></span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover mb-0" style="font-size: 0.85rem;">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center">STT</th>
+                <th>Phòng Ban Lập HS</th>
+                <th>Mã Hồ Sơ</th>
+                <th>Tiêu Đề Hồ Sơ</th>
+                <th class="text-center">Năm</th>
+                <th>Người Lập</th>
+              </tr>
+            </thead>
+            <tbody id="detailCot8TableBody">
+              <!-- Dữ liệu sẽ được render vào đây qua AJAX -->
+            </tbody>
+          </table>
+        </div>
+        <div id="detailCot8Loading" class="text-center p-4 d-none">
+            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Vùng định nghĩa rỗng dành để "giam" các thẻ thông báo động (Toast Noti) chứa pop-up kiểu Floating góc phải ngoài viền màn hình -->
 <div id="toastContainer" style="position:fixed; top:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.75rem;"></div>
 
@@ -311,7 +414,16 @@
 <!-- Phần điểm chỉ thị định nghĩa để đẩy đoạn mã Script nằm dưới cùng của Body (kỹ thuật lazy load qua cơ chế Section _Layout.cshtml) -->
 @section Scripts {
 <script>
-    // ---- HÀM VÀ XỬ LÝ TOAST THÔNG BÁO UI TƯƠNG TÁC JS ----
+    // Hàm hỗ trợ lấy class CSS cho badge trạng thái
+    function getStatusBadgeClass(status) {
+        if (!status) return 'bg-secondary';
+        status = status.toUpperCase();
+        if (status.includes('HOAN_THANH') || status.includes('DA_CHUYEN')) return 'bg-success';
+        if (status.includes('DANG_THUC_HIEN')) return 'bg-primary';
+        if (status.includes('CHUA_THUC_HIEN')) return 'bg-warning text-dark';
+        return 'bg-info';
+    }
+
     // Hàm showToast dùng để nhúng html của mẩu text thông báo (thành công/lỗi) vào phần giao diện UI tạo popup (thay thế hộp thoại Alert cũ)
     function showToast(msg, type, ms) {
         ms = ms || 3500; // Tham số thời gian timeout tự hủy cái thông báo (Mặc định: 3,5 giây)
@@ -420,6 +532,120 @@
             }
         });
     }
+
+    // Modal Xem Chi Tiết Cột 3
+    var detailCot3ModalEl = document.getElementById('detailCot3Modal');
+    var detailCot3Modal = detailCot3ModalEl ? new bootstrap.Modal(detailCot3ModalEl) : null;
+    
+    document.querySelectorAll('.btn-detail-cot3').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+            var idDv = this.getAttribute('data-id-dv');
+            var tenDv = this.getAttribute('data-ten-dv');
+            var fromDate = '@Model.FromDate.ToString("yyyy-MM-dd")';
+            var toDate = '@Model.ToDate.ToString("yyyy-MM-dd")';
+            
+            document.getElementById('detailCot3TenDv').textContent = tenDv;
+            var tbody = document.getElementById('detailCot3TableBody');
+            var loading = document.getElementById('detailCot3Loading');
+            
+            tbody.innerHTML = '';
+            loading.classList.remove('d-none');
+            
+            if (detailCot3Modal) detailCot3Modal.show();
+            
+            try {
+                var url = `/BaoCao/GetChiTietCot3?idDv=${idDv}&fromDate=${fromDate}&toDate=${toDate}`;
+                var res = await fetch(url);
+                var result = await res.json();
+                
+                loading.classList.add('d-none');
+                
+                if (result.success) {
+                    if (result.data && result.data.length > 0) {
+                        var html = '';
+                        result.data.forEach(function(item, index) {
+                            var hanGq = item.han_gq ? new Date(item.han_gq).toLocaleDateString('vi-VN') : '';
+                            html += `<tr>
+                                <td class="text-center">${index + 1}</td>
+                                <td>${item.ten_pb || ''}</td>
+                                <td class="text-center">${item.id_cv || ''}</td>
+                                <td>${item.ky_hieu || ''}</td>
+                                <td class="text-center">${hanGq}</td>
+                                <td>${item.firstname || ''} <br/><small class="text-muted">${item.nguoi_chu_tri || ''}</small></td>
+                                <td><span class="badge ${getStatusBadgeClass(item.trang_thai_xu_ly)}">${item.trang_thai_xu_ly || ''}</span></td>
+                            </tr>`;
+                        });
+                        tbody.innerHTML = html;
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">Không có dữ liệu chi tiết</td></tr>';
+                    }
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle"></i> Lỗi: ${result.message}</td></tr>`;
+                    showToast('Lỗi: ' + result.message, 'error', 5000);
+                }
+            } catch (err) {
+                loading.classList.add('d-none');
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-danger"><i class="fas fa-wifi"></i> Lỗi kết nối: ${err.message}</td></tr>`;
+                showToast('Lỗi kết nối mạng: ' + err.message, 'error');
+            }
+        });
+    });
+
+    // Modal Xem Chi Tiết Cột 8
+    var detailCot8ModalEl = document.getElementById('detailCot8Modal');
+    var detailCot8Modal = detailCot8ModalEl ? new bootstrap.Modal(detailCot8ModalEl) : null;
+    
+    document.querySelectorAll('.btn-detail-cot8').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+            var idDv = this.getAttribute('data-id-dv');
+            var tenDv = this.getAttribute('data-ten-dv');
+            var fromDate = '@Model.FromDate.ToString("yyyy-MM-dd")';
+            var toDate = '@Model.ToDate.ToString("yyyy-MM-dd")';
+            
+            document.getElementById('detailCot8TenDv').textContent = tenDv;
+            var tbody = document.getElementById('detailCot8TableBody');
+            var loading = document.getElementById('detailCot8Loading');
+            
+            tbody.innerHTML = '';
+            loading.classList.remove('d-none');
+            
+            if (detailCot8Modal) detailCot8Modal.show();
+            
+            try {
+                var url = `/BaoCao/GetChiTietCot8?idDv=${idDv}&fromDate=${fromDate}&toDate=${toDate}`;
+                var res = await fetch(url);
+                var result = await res.json();
+                
+                loading.classList.add('d-none');
+                
+                if (result.success) {
+                    if (result.data && result.data.length > 0) {
+                        var html = '';
+                        result.data.forEach(function(item, index) {
+                            html += `<tr>
+                                <td class="text-center">${index + 1}</td>
+                                <td>${item.phong_ban_lap_hs || ''}</td>
+                                <td>${item.ma_hoso || ''}</td>
+                                <td>${item.tieu_de_ho_so || ''}</td>
+                                <td class="text-center">${item.nam_hs || ''}</td>
+                                <td>${item.firstname || ''} <br/><small class="text-muted">${item.nguoi_lap_hs || ''}</small></td>
+                            </tr>`;
+                        });
+                        tbody.innerHTML = html;
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu chi tiết</td></tr>';
+                    }
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle"></i> Lỗi: ${result.message}</td></tr>`;
+                    showToast('Lỗi: ' + result.message, 'error', 5000);
+                }
+            } catch (err) {
+                loading.classList.add('d-none');
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-wifi"></i> Lỗi kết nối: ${err.message}</td></tr>`;
+                showToast('Lỗi kết nối mạng: ' + err.message, 'error');
+            }
+        });
+    });
 
 </script>
 }

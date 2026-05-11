@@ -8,9 +8,22 @@
     </div>
     <div class="card-body">
         
+        @if (ViewBag.TargetIdDv != null)
+        {
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Chế độ:</strong> Nhập dữ liệu riêng cho Đơn vị ID: <strong>@ViewBag.TargetIdDv</strong>. 
+                Dữ liệu cũ của đơn vị này sẽ bị ghi đè, các đơn vị khác không bị ảnh hưởng.
+            </div>
+        }
+        
         <div class="alert alert-warning mb-4">
             <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Lưu ý:</strong> Khi thực thi tính năng này, hệ thống sẽ tự động vô hiệu hóa (<code>DISABLE = 1</code>) các dữ liệu cũ của biểu 3 (<code>BC_VP_QD_296_BIEU_3</code>) trước khi nạp dữ liệu mới. Hãy chắc chắn rằng bạn đã sao lưu dữ liệu trước khi thực hiện hoặc chắc chắn file tải lên là chính xác. Hỗ trợ file lệnh SQL hoặc file trích xuất dạng CSV.
+            <strong>Lưu ý:</strong> Khi thực thi tính năng này, hệ thống sẽ tự động cập nhật dữ liệu. 
+            <ul>
+                <li>Đối với <strong>File Excel (.xlsx)</strong>: Cần có 3 Sheet (Grid 1: Tổng hợp, Grid 2: Chi tiết C3, Grid 3: Chi tiết C8).</li>
+                <li>Đối với <strong>File CSV/SQL</strong>: Hệ thống sẽ thực thi lệnh trực tiếp hoặc nạp vào bảng tổng hợp.</li>
+            </ul>
         </div>
 
         @if (TempData["SuccessMessage"] != null)
@@ -43,10 +56,18 @@
         }
 
         <form asp-controller="Database" asp-action="ImportSql" method="post" enctype="multipart/form-data">
+            @if (ViewBag.TargetIdDv != null)
+            {
+                <input type="hidden" name="idDv" value="@ViewBag.TargetIdDv" />
+            }
             <div class="mb-4">
-                <label for="sqlFile" class="form-label fw-semibold">Chọn file dữ liệu (.sql, .csv, .txt)</label>
-                <input class="form-control form-control-lg" type="file" id="sqlFile" name="sqlFile" accept=".sql,.csv,.txt" required>
-                <div class="form-text">Hệ thống sẽ tự nhận diện định dạng CSV nếu dòng đầu tiên là "ID,ID_DV,COT_1...". Nếu không, hệ thống sẽ chạy như các lệnh SQL phân tách bằng dấu chấm phẩy (;).</div>
+                <label for="sqlFiles" class="form-label fw-semibold">Chọn các file dữ liệu (.sql, .csv, .txt, .xlsx)</label>
+                <input class="form-control form-control-lg" type="file" id="sqlFiles" name="sqlFiles" accept=".sql,.csv,.txt,.xlsx" multiple required>
+                <div class="form-text">
+                    - <strong>Excel:</strong> Tự động nạp vào cả 3 bảng (Tổng hợp và Chi tiết C3/C8).<br/>
+                    - <strong>CSV:</strong> Nhận diện nếu dòng đầu là "ID,ID_DV...".<br/>
+                    - <strong>SQL:</strong> Chạy các lệnh phân tách bằng dấu (;).
+                </div>
             </div>
 
             <button type="submit" class="btn btn-primary px-4">

@@ -105,8 +105,12 @@ namespace BAOCAO_369.Controllers
                 ? items.Max(x => x.NgayCapNhat) ?? dateToDefault 
                 : dateToDefault;
 
-            // Truyền dữ liệu vào Service thao tác với Excel để xuất sinh dữ liệu dạng byte array
-            var fileContents = _excelExportService.ExportToExcel(items, dateFrom, maxUpdateDate);
+            // Lấy thêm chi tiết Cột 3 và Cột 8 để xuất vào các Sheet khác
+            var detailsC3 = _baoCaoService.GetChiTietCot3(idDv ?? 0, dateFrom, maxUpdateDate);
+            var detailsC8 = _baoCaoService.GetChiTietCot8(idDv ?? 0, dateFrom, maxUpdateDate);
+
+            // Truyền dữ liệu vào Service thao tác với Excel để xuất sinh dữ liệu dạng byte array (3 Sheets)
+            var fileContents = _excelExportService.ExportToExcel(items, detailsC3, detailsC8, dateFrom, maxUpdateDate);
 
             // Trả về file tải xuống cho client người dùng kèm theo byte data, kiểu mime Excel và đặt tên file tuỳ biến gồm ngày tháng
             return File(
@@ -150,11 +154,16 @@ namespace BAOCAO_369.Controllers
                             ? items.Max(x => x.NgayCapNhat) ?? dateToDefault 
                             : dateToDefault;
 
+                        // Lấy thêm chi tiết Cột 3 và Cột 8 cho từng đơn vị
+                        var detailsC3 = _baoCaoService.GetChiTietCot3(dv.ID_DV, dateFrom, maxUpdateDate);
+                        var detailsC8 = _baoCaoService.GetChiTietCot8(dv.ID_DV, dateFrom, maxUpdateDate);
+
                         // Truyền dữ liệu vào Service thao tác với Excel để xuất sinh dữ liệu dạng byte array
-                        var fileContents = _excelExportService.ExportToExcel(items, dateFrom, maxUpdateDate);
+                        var fileContents = _excelExportService.ExportToExcel(items, detailsC3, detailsC8, dateFrom, maxUpdateDate);
 
                         // Tạo tên file an toàn (bỏ các ký tự đặc biệt có thể lỗi path nếu có trong tên đơn vị)
-                        var safeDonViName = string.Join("_", dv.TEN_DV.Split(Path.GetInvalidFileNameChars()));
+                        string rawName = dv.TEN_DV ?? $"DonVi_{dv.ID_DV}";
+                        var safeDonViName = string.Join("_", rawName.Split(Path.GetInvalidFileNameChars()));
                         var fileNameInZip = $"BaoCao_{safeDonViName}_{DateTime.Now:yyyyMMdd}.xlsx";
 
                         // Tạo một mục (entry) mới trong file ZIP
@@ -196,6 +205,42 @@ namespace BAOCAO_369.Controllers
             return View(items);
         }
 
+        // Khai báo Action GetChiTietCot3 để lấy danh sách chi tiết hồ sơ khi click vào cột 3
+        [HttpGet]
+        public IActionResult GetChiTietCot3(decimal idDv, DateTime? fromDate, DateTime? toDate)
+        {
+            try
+            {
+                var dateFrom = fromDate ?? new DateTime(DateTime.Now.Year, 1, 1);
+                var dateTo = toDate ?? DateTime.Now;
+
+                var items = _baoCaoService.GetChiTietCot3(idDv, dateFrom, dateTo);
+                return Json(new { success = true, data = items });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Khai báo Action GetChiTietCot8 để lấy danh sách chi tiết hồ sơ khi click vào cột 8
+        [HttpGet]
+        public IActionResult GetChiTietCot8(decimal idDv, DateTime? fromDate, DateTime? toDate)
+        {
+            try
+            {
+                var dateFrom = fromDate ?? new DateTime(DateTime.Now.Year, 1, 1);
+                var dateTo = toDate ?? DateTime.Now;
+
+                var items = _baoCaoService.GetChiTietCot8(idDv, dateFrom, dateTo);
+                return Json(new { success = true, data = items });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         public class SendEmailRequest
         {
             public decimal IdDv { get; set; }
@@ -230,9 +275,11 @@ namespace BAOCAO_369.Controllers
                     return Json(new { success = false, message = "Đơn vị không có dữ liệu báo cáo để gửi." });
                 }
 
-                // Xuất file báo cáo hiện tại của đơn vị
+                // Xuất file báo cáo hiện tại của đơn vị (3 sheets)
                 var dateTo = items.Max(x => x.NgayCapNhat) ?? DateTime.Now;
-                var excelBytes = _excelExportService.ExportToExcel(items, dateFrom, dateTo);
+                var detailsC3 = _baoCaoService.GetChiTietCot3(req.IdDv, dateFrom, dateTo);
+                var detailsC8 = _baoCaoService.GetChiTietCot8(req.IdDv, dateFrom, dateTo);
+                var excelBytes = _excelExportService.ExportToExcel(items, detailsC3, detailsC8, dateFrom, dateTo);
 
                 var subject = $"[BÁO CÁO EVN] Báo cáo thống kê kết quả lập hồ sơ - {donVi.TEN_DV}";
                 var body = $@"
@@ -277,7 +324,9 @@ namespace BAOCAO_369.Controllers
                     if (items == null || items.Count == 0) continue;
 
                     var dateTo = items.Max(x => x.NgayCapNhat) ?? DateTime.Now;
-                    var excelBytes = _excelExportService.ExportToExcel(items, dateFrom, dateTo);
+                    var detailsC3 = _baoCaoService.GetChiTietCot3(donVi.ID_DV, dateFrom, dateTo);
+                    var detailsC8 = _baoCaoService.GetChiTietCot8(donVi.ID_DV, dateFrom, dateTo);
+                    var excelBytes = _excelExportService.ExportToExcel(items, detailsC3, detailsC8, dateFrom, dateTo);
 
                     var subject = $"[BÁO CÁO EVN] Báo cáo thống kê kết quả lập hồ sơ - {donVi.TEN_DV}";
                     var body = $@"

@@ -10,8 +10,52 @@
       "description": "Danh sách các đơn vị điện lực thành viên trực thuộc"
     },
     {
-      "name": "DOANH_THU_THANG",
-      "description": "Bảng lưu trữ chỉ tiêu báo cáo doanh thu theo tháng của các đơn vị"
+      "name": "DM_PHONG_BAN",
+      "description": "Danh sách các phòng ban trực thuộc các đơn vị điện lực thành viên"
+    },
+    {
+      "name": "DM_Phong_Ban_TEMP",
+      "description": "Bảng tạm chứa danh sách các phòng ban cần báo cáo (tích hợp AI)"
+    },
+    {
+      "name": "CV_HOSO_DM_DON_VI",
+      "description": "Bảng liên kết giữa Công việc và Danh mục Đơn vị (2 cấp)"
+    },
+    {
+      "name": "CV_HOSO_DM_DON_VI_2",
+      "description": "Bảng liên kết giữa Công việc và Danh mục Đơn vị (3 cấp)"
+    },
+    {
+      "name": "CV_HOSO_DM_PHONGBAN",
+      "description": "Bảng liên kết giữa Công việc và Danh mục Phòng ban"
+    },
+    {
+      "name": "D_THONGKE",
+      "description": "Bảng chứa số liệu thống kê tổng hợp (2 cấp)"
+    },
+    {
+      "name": "D_THONGKE_2",
+      "description": "Bảng chứa số liệu thống kê tổng hợp (3 cấp)"
+    },
+    {
+      "name": "D_THONGKE_BIEU_3",
+      "description": "Bảng lưu trữ dữ liệu thống kê chi tiết cho Biểu số 3 (cả 2 cấp)"
+    },
+    {
+      "name": "LICH_SU_XU_LY",
+      "description": "Lịch sử xử lý công việc hồ sơ"
+    },
+    {
+      "name": "VAN_BAN",
+      "description": "Danh mục văn bản"
+    },
+    {
+      "name": "HOSO",
+      "description": "Danh mục hồ sơ"
+    },
+    {
+      "name": "CV_HOSO",
+      "description": "Danh mục công việc"
     }
   ]
 }

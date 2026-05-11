@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using BAOCAO_369.Services;
 
@@ -16,51 +18,76 @@ namespace BAOCAO_369.Controllers
         }
 
         [HttpGet]
-        public IActionResult ImportSql()
+        public IActionResult ImportSql(decimal? idDv)
         {
+            ViewBag.TargetIdDv = idDv;
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> ImportSql(IFormFile sqlFile)
+        public async Task<IActionResult> ImportSql(List<IFormFile> sqlFiles, decimal? idDv)
         {
-            if (sqlFile == null || sqlFile.Length == 0)
+            if (sqlFiles == null || sqlFiles.Count == 0)
             {
-                TempData["ErrorMessage"] = "Vui lòng chọn một file SQL để tải lên.";
+                TempData["ErrorMessage"] = "Vui lòng chọn ít nhất một file để tải lên.";
                 return View();
             }
 
-            var ext = Path.GetExtension(sqlFile.FileName).ToLowerInvariant();
-            if (ext != ".sql" && ext != ".csv" && ext != ".txt")
-            {
-                TempData["ErrorMessage"] = "Chỉ chấp nhận file có định dạng .sql, .csv hoặc .txt";
-                return View();
-            }
+            int totalSuccess = 0;
+            int totalError = 0;
+            var allErrors = new List<string>();
 
-            try
+            foreach (var file in sqlFiles)
             {
-                using (var reader = new StreamReader(sqlFile.OpenReadStream()))
+                if (file.Length == 0) continue;
+
+                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                try
                 {
-                    string sqlContent = await reader.ReadToEndAsync();
-                    var result = await _dbService.ImportDataAsync(sqlContent);
-
-                    if (result.errorCount > 0)
+                    if (ext == ".xlsx")
                     {
-                        TempData["WarningMessage"] = $"Đã thực thi thành công {result.successCount} lệnh. Có {result.errorCount} lệnh bị lỗi.";
-                        // Ghi log hoặc hiển thị lỗi đầu tiên để user biết
-                        TempData["ErrorDetails"] = result.errors.Count > 0 ? result.errors[0] : "";
+                        var result = await _dbService.ImportExcelDataAsync(file.OpenReadStream(), idDv);
+                        totalSuccess += result.successCount;
+                        totalError += result.errorCount;
+                        if (result.errors != null && result.errors.Count > 0) 
+                            allErrors.AddRange(result.errors.Select(e => $"[{file.FileName}] {e}"));
+                    }
+                    else if (ext == ".sql" || ext == ".csv" || ext == ".txt")
+                    {
+                        using (var reader = new StreamReader(file.OpenReadStream()))
+                        {
+                            string sqlContent = await reader.ReadToEndAsync();
+                            var result = await _dbService.ImportDataAsync(sqlContent);
+                            totalSuccess += result.successCount;
+                            totalError += result.errorCount;
+                            if (result.errors != null && result.errors.Count > 0) 
+                                allErrors.AddRange(result.errors.Select(e => $"[{file.FileName}] {e}"));
+                        }
                     }
                     else
                     {
-                        TempData["SuccessMessage"] = $"Thực thi thành công toàn bộ {result.successCount} lệnh từ file SQL. Các dữ liệu cũ đã được cập nhật disable = 1.";
+                        allErrors.Add($"[{file.FileName}] Định dạng không hỗ trợ.");
+                        totalError++;
                     }
                 }
-            }
-            catch (System.Exception ex)
-            {
-                TempData["ErrorMessage"] = "Đã xảy ra lỗi hệ thống khi đọc hoặc xử lý file: " + ex.Message;
+                catch (System.Exception ex)
+                {
+                    allErrors.Add($"[{file.FileName}] Lỗi hệ thống: {ex.Message}");
+                    totalError++;
+                }
             }
 
+            if (totalError > 0)
+            {
+                TempData["WarningMessage"] = $"Đã xử lý {sqlFiles.Count} file. Thành công: {totalSuccess}. Lỗi: {totalError}.";
+                TempData["ErrorDetails"] = allErrors.Count > 0 ? string.Join("<br/>", allErrors.Take(10)) : "";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = $"Nhập thành công toàn bộ {totalSuccess} bản ghi từ {sqlFiles.Count} file.";
+            }
+
+            ViewBag.TargetIdDv = idDv;
             return View();
         }
     }

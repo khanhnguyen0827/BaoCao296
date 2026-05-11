@@ -2,6 +2,7 @@
 using System;
 // Import thư viện Collections.Generic để sử dụng cấu trúc dữ liệu List
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 // Định nghĩa không gian tên Models chứa các đối tượng dữ liệu
 namespace BAOCAO_369.Models
@@ -84,5 +85,80 @@ namespace BAOCAO_369.Models
         public DateTime FromDate { get; set; }
         // Ngày kết thúc (hoặc ngày liệu mới nhất dùng hiển thị trên UI)
         public DateTime ToDate { get; set; }
+    }
+
+    // ==========================================
+    // Model ChiTietCot3Item biểu diễn dữ liệu chi tiết khi click vào Cột 3
+    // ==========================================
+    public class ChiTietCot3Item
+    {
+        [JsonPropertyName("id_dv")]
+        public decimal ID_DV { get; set; }
+        
+        [JsonPropertyName("ten_dv")]
+        public string TEN_DV { get; set; }
+        
+        [JsonPropertyName("id_pb_chutri")]
+        public decimal? ID_PB_CHUTRI { get; set; }
+        
+        [JsonPropertyName("ten_pb")]
+        public string TEN_PB { get; set; }
+        
+        [JsonPropertyName("id_cv")]
+        public decimal ID_CV { get; set; }
+        
+        [JsonPropertyName("ky_hieu")]
+        public string KY_HIEU { get; set; }
+        
+        [JsonPropertyName("han_gq")]
+        public DateTime? HAN_GQ { get; set; }
+        
+        [JsonPropertyName("nguoi_chu_tri")]
+        public decimal? NGUOI_CHU_TRI { get; set; }
+        
+        [JsonPropertyName("firstname")]
+        public string FIRSTNAME { get; set; }
+        
+        [JsonPropertyName("trang_thai_xu_ly")]
+        public string TRANG_THAI_XU_LY { get; set; }
+        
+        [JsonPropertyName("lap_hscv_nv")]
+        public decimal? LAP_HSCV_NV { get; set; }
+    }
+
+    // ==========================================
+    // Model ChiTietCot8Item biểu diễn dữ liệu chi tiết khi click vào Cột 8
+    // ==========================================
+    public class ChiTietCot8Item
+    {
+        [JsonPropertyName("id_dv")]
+        public decimal ID_DV { get; set; }
+
+        [JsonPropertyName("ten_dv")]
+        public string TEN_DV { get; set; }
+
+        [JsonPropertyName("id_pb_chutri")]
+        public decimal? ID_PB_CHUTRI { get; set; }
+
+        [JsonPropertyName("phong_ban_lap_hs")]
+        public string PHONG_BAN_LAP_HS { get; set; }
+
+        [JsonPropertyName("id_hs")]
+        public decimal ID_HS { get; set; }
+
+        [JsonPropertyName("ma_hoso")]
+        public string MA_HOSO { get; set; }
+
+        [JsonPropertyName("tieu_de_ho_so")]
+        public string TIEU_DE_HO_SO { get; set; }
+
+        [JsonPropertyName("nam_hs")]
+        public decimal? NAM_HS { get; set; }
+
+        [JsonPropertyName("nguoi_lap_hs")]
+        public decimal? NGUOI_LAP_HS { get; set; }
+
+        [JsonPropertyName("firstname")]
+        public string FIRSTNAME { get; set; }
     }
 }

@@ -40,7 +40,7 @@ namespace BAOCAO_369.Services
                 // Mở luồng kết nối tới server DB
                 conn.Open();
                 // Câu SQL truy vấn ID, Mã, Tên của Đơn vị với điều kiện chưa bị Disable và có ID Cha là 342 (Đơn Vị Tổng) HOẶC chính là Đơn Vị Tổng 342, được sắp xếp bằng cột STT
-                string sql = "SELECT ID_DV, MA_DV, TEN_DV, EMAIL FROM QUANTRI.DM_DON_VI WHERE DISABLE = 0 AND (ID_DV_CHA = 342 OR ID_DV = 342) ORDER BY STT, TEN_DV";
+                string sql = "SELECT ID_DV, MA_DV, TEN_DV, EMAIL FROM QUANTRI.DM_DON_VI WHERE DISABLE = 0 AND (ID_DV = 342 OR ID_DV_CHA = 342) ORDER BY STT, TEN_DV";
                 // Tạo một OracleCommand để chuẩn bị thực thi câu lệnh SQL với luồng (conn) đã mở
                 using (OracleCommand cmd = new OracleCommand(sql, conn))
                 // ExecuteReader sẽ thực thi câu lệnh SQL select và trả về 1 Data Reader cho phép đọc theo luồng qua từng Row dữ liệu
@@ -96,8 +96,7 @@ namespace BAOCAO_369.Services
                         b.COT_11, b.COT_12, b.COT_13, b.COT_14
                     FROM QUANTRI.DM_DON_VI d
                     LEFT JOIN LatestBC b ON d.ID_DV = b.ID_DV
-                    WHERE d.DISABLE = 0
-                    AND (d.ID_DV_CHA = 342 OR d.ID_DV = 342)";
+                    WHERE d.DISABLE = 0 AND (d.ID_DV = 342 OR d.ID_DV_CHA = 342)";
 
                 // Filter động (Dynamic Query) bằng cách cộng chuỗi (nếu CÓ truyền idDv cụ thể, chứ không phải tìm ALL)
                 if (idDv.HasValue && idDv > 0)
@@ -227,6 +226,92 @@ namespace BAOCAO_369.Services
                             // nhưng trong model chưa có prop Disable. Sẽ tạo thêm prop Disable trong model hoặc pass ViewBag.
                             // Để an toàn, tạm truyền qua viewbag hoặc ko cần vì sẽ liệt kê tất cả theo ngày.
                             items.Add(item);
+                        }
+                    }
+                }
+            }
+            return items;
+        }
+
+        // --- Hàm lấy chi tiết dữ liệu cho cột 3 ---
+        public List<ChiTietCot3Item> GetChiTietCot3(decimal idDv, DateTime fromDate, DateTime toDate)
+        {
+            var items = new List<ChiTietCot3Item>();
+            using (OracleConnection conn = new OracleConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = @"
+                    SELECT 
+                        ID_DV, TEN_DV, ID_PB_CHUTRI, TEN_PB, ID_CV, KY_HIEU, HAN_GQ, NGUOI_CHU_TRI, FIRSTNAME, TRANG_THAI_XU_LY, LAP_HSCV_NV
+                    FROM BAOCAO.BC_VP_QD_296_BIEU_3_CHITIET_C3
+                    WHERE (:idDv = 0 OR ID_DV = :idDv) AND DISABLE = 0
+                    ORDER BY TEN_PB, ID_CV";
+
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.Parameters.Add(new OracleParameter("idDv", idDv));
+
+                    using (OracleDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            items.Add(new ChiTietCot3Item
+                            {
+                                ID_DV = reader["ID_DV"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["ID_DV"]),
+                                TEN_DV = reader["TEN_DV"]?.ToString(),
+                                ID_PB_CHUTRI = reader["ID_PB_CHUTRI"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["ID_PB_CHUTRI"]),
+                                TEN_PB = reader["TEN_PB"]?.ToString(),
+                                ID_CV = reader["ID_CV"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["ID_CV"]),
+                                KY_HIEU = reader["KY_HIEU"]?.ToString(),
+                                HAN_GQ = reader["HAN_GQ"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["HAN_GQ"]),
+                                NGUOI_CHU_TRI = reader["NGUOI_CHU_TRI"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["NGUOI_CHU_TRI"]),
+                                FIRSTNAME = reader["FIRSTNAME"]?.ToString(),
+                                TRANG_THAI_XU_LY = reader["TRANG_THAI_XU_LY"]?.ToString(),
+                                LAP_HSCV_NV = reader["LAP_HSCV_NV"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["LAP_HSCV_NV"])
+                            });
+                        }
+                    }
+                }
+            }
+            return items;
+        }
+
+        // --- Hàm lấy chi tiết dữ liệu cho cột 8 ---
+        public List<ChiTietCot8Item> GetChiTietCot8(decimal idDv, DateTime fromDate, DateTime toDate)
+        {
+            var items = new List<ChiTietCot8Item>();
+            using (OracleConnection conn = new OracleConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = @"
+                    SELECT 
+                        C8.ID_DV, DV.TEN_DV, C8.ID_PB_CHUTRI, C8.PHONG_BAN_LAP_HS, C8.ID_HS, C8.MA_HOSO, C8.TIEU_DE_HO_SO, C8.NAM_HS, C8.NGUOI_LAP_HS, C8.FIRSTNAME
+                    FROM BAOCAO.BC_VP_QD_296_BIEU_3_CHITIET_C8 C8
+                    LEFT JOIN QUANTRI.DM_DON_VI DV ON C8.ID_DV = DV.ID_DV
+                    WHERE (:idDv = 0 OR C8.ID_DV = :idDv) AND C8.DISABLE = 0
+                    ORDER BY C8.PHONG_BAN_LAP_HS, C8.ID_HS";
+
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.Parameters.Add(new OracleParameter("idDv", idDv));
+
+                    using (OracleDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            items.Add(new ChiTietCot8Item
+                            {
+                                ID_DV = reader["ID_DV"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["ID_DV"]),
+                                TEN_DV = reader["TEN_DV"]?.ToString(),
+                                ID_PB_CHUTRI = reader["ID_PB_CHUTRI"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["ID_PB_CHUTRI"]),
+                                PHONG_BAN_LAP_HS = reader["PHONG_BAN_LAP_HS"]?.ToString(),
+                                ID_HS = reader["ID_HS"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["ID_HS"]),
+                                MA_HOSO = reader["MA_HOSO"]?.ToString(),
+                                TIEU_DE_HO_SO = reader["TIEU_DE_HO_SO"]?.ToString(),
+                                NAM_HS = reader["NAM_HS"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["NAM_HS"]),
+                                NGUOI_LAP_HS = reader["NGUOI_LAP_HS"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["NGUOI_LAP_HS"]),
+                                FIRSTNAME = reader["FIRSTNAME"]?.ToString()
+                            });
                         }
                     }
                 }
